@@ -22,10 +22,15 @@ module.exports = (req,res) =>{
                 let password = req.body.password
                 password = sha256(sha256(password.length) + password + sha256(email)).toString()
                 
-                let ticket = chance.string({ length: 128,  alpha: true, numeric: true })
-
-                db.collection("users").find({email: email, password: password}).toArray((err,user)=>{
+                db.collection("users").find({email: email, password: password}).toArray(async (err,user)=>{
                     if(user.length > 0){
+                        let ticket = chance.string({ length: 128,  alpha: true, numeric: true })
+
+                        await db.collection("tickets").insert({
+                            ticket: ticket,
+                            email: email
+                        })
+
                         res.json({
                             ticket: ticket
                         })

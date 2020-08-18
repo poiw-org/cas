@@ -4,10 +4,9 @@ input[type=text],input[type=email],input[type=password]{
     padding:30px !important;
 }
 
-button, input[type=button]{
+.btn{
     background-color: #000 !important;
     border: none !important;
-    font-size: 24px;
     font-family: $main_font !important;
     border-radius: 5px !important;
     padding:20px 80px 20px 80px !important;

@@ -12,7 +12,7 @@ po/iw CAS
 
 Το project είναι γραμμένο σε Next.js (React Framework) και συνδέεται σε MongoDB με ενα environment variable MONGODB_URL.
 Αφού κάνεις git clone και αφού αποκτήσεις πρόσβαση σε κάποια db (δική σου ή της ομάδας), τρέξε:
-'''
+```
 yarn install #για να εγκαταστήσεις τα dependancies.
 yarn dev #για να τρέξεις το πρόγραμμα σε development mode
-'''
+```

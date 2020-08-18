@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Open+Sans:wght@300;400;700&display=swap');
+
+
+body{
+    font-family: $main_font;
+}
+
+accent{
+    background: $accent_color;
+    color: #fff;
+    padding:5px 20px 5px 20px;
+    border-radius: 3px;
+}
+
+.logo{
+    margin-top:140px;
+    h1{
+        font-size: 25px;
+    }
+    p{
+        color: grey;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+}

@@ -1,4 +1,6 @@
-po/iw CAS
+## po/iw CAS
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=poiw-org_cas&metric=alert_status)](https://sonarcloud.io/dashboard?id=poiw-org_cas)
 
 ## Τι είναι;
 

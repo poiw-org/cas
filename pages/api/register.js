@@ -18,15 +18,31 @@ module.exports = (req,res) => {
             
             if(!validateEmail(email)) res.status(400).send('Incorrect email format.')
 
+            let emailExists = await db.collection('users').findOne({email})
+
+            if(emailExists) res.status(400).send('User already exists.')
+
             password = sha256(password).toString()
 
             let registrationToken = chance.string({ length: 128,  alpha: true, numeric: true })
+
+            let usernameIsAvailable = false
+            let username
+            while(!usernameIsAvailable){
+                username = `poiw_${chance.string({ length: 12,  alpha: true, numeric: true })}`
+                usernameIsAvailable = await db.collection("users").findOne({username})
+                console.log(username,usernameIsAvailable)
+
+
+                if(usernameIsAvailable == null) usernameIsAvailable = true
+            }
             
             await db.collection("pendingRegistrations").insertOne({
                 email,
                 password,
                 school,
                 fullName,
+                username,
                 registrationToken
             })
 

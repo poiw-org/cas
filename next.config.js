@@ -10,6 +10,23 @@ module.exports = {
             }
           ],
         },
+        {
+            source: '/api/proxyValidate',
+            headers: [
+              {
+                key: 'Content-Type',
+                value: 'text/xml',
+              }
+            ],
+          },
       ]
     },
+    async rewrites() {
+        return [
+          {
+            source: '/api/proxyValidate',
+            destination: '/api/serviceValidate',
+          },
+        ]
+      },
   }

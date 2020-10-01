@@ -19,7 +19,7 @@ class Login extends Component {
         super(props)
 
         this.state = {
-            email: "kiagias@protonmail.com",
+            email: "",
             emailValidation: {tried: false, emailExists: false},
             password: "",
             message: {text:'', variant:'danger'},
@@ -203,7 +203,7 @@ class Login extends Component {
                             </Button>                   
                         </div>
                         <div className="col-12">
-                            <p style={{marginTop: 120 + 'px'}}>
+                            <p style={{marginTop: 40 + 'px'}}>
                                 <u><b>Εισάγετε το email σας και πατήστε επόμενο.</b></u><br/>Αν δεν έχετε λογαριασμό στο po/iw, τότε θα σας ζητηθεί να δημιουργήσετε έναν καινούριο.
                             </p>
                         </div>
@@ -223,8 +223,8 @@ class Login extends Component {
                                 Είσοδος 
                             </Button>                   
                         </div>
-                        <div className="col-12">
-                            <p style={{marginTop: 120 + 'px'}}>
+                        <div className="col-12"> 
+                            <p style={{marginTop: 40 + 'px'}}>
                                 <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u><br/>Το σύστημα επαναφοράς κωδικού είναι ακόμη υπό ανάπτυξη. Παρακαλούμε επικοινωνίστε με την ομάδα.
                             </p>
                         </div>
@@ -233,12 +233,13 @@ class Login extends Component {
 
                     { this.state.emailValidation.tried && !this.state.emailValidation.emailExists ? (
                         <Form className="register row" onSubmit={this.handleSubmit}>
-                            <p className="col-9"><i className="fas fa-lock"></i> Σοκ! Φαίνεται ότι δεν είσαι μέλος στο po/iw! <b>Φτιάξε ένα ακάουντ ράιτ ΝΑΟΥ:</b></p>
+                            <p className="col-9"><i className="fas fa-lock"></i> Τρομερό! Φαίνεται ότι δεν είσαι μέλος στο po/iw! <b>Φτιάξε έναν λογαριασμό εδώ:</b></p>
                             <div className="col-12">
                                 <Form.Group className="row">
-                                    <Form.Control type="text" className="col-12 col-md-8" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
-                                    <Form.Control type="text" className="col-12 col-md-8" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Τηλ. Επικοινωνίας" required/>
-                                    <Form.Control type="text" className="col-12 col-md-8" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
+                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                    <Form.Control type="password" className="col-12 col-md-6" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
                                     <label className="col-12 p-2">Ίδρυμα φοίτησης:</label>
                                     <Form.Control as="select" size="md" value={this.state.school} className="col-12 col-md-8 schoolSelector" onChange={this.handleChange.bind(this, 'school')}>
                                         {this.state.schools.map(school=>{
@@ -247,18 +248,12 @@ class Login extends Component {
                                             )
                                         })}
                                     </Form.Control>
-                                    <Form.Control type="password" className="col-12 col-md-8" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
                                 </Form.Group>
                             </div>
                             <div className="col-12">
                                 <Button className="btn register" variant="primary" type="submit">
                                     Εγγραφή 
                                 </Button>                   
-                            </div>
-                            <div className="col-12">
-                                <p style={{marginTop: 120 + 'px'}}>
-                                    <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u><br/>Το σύστημα επαναφοράς κωδικού είναι ακόμη υπό ανάπτυξη. Παρακαλούμε επικοινωνίστε με την ομάδα.
-                                </p>
                             </div>
                         </Form>
                     ):false}

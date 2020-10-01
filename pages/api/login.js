@@ -28,8 +28,8 @@ module.exports = (req, res) => {
                     password
                 }).toArray(async (err, user) => {
                     if (user.length > 0) {
-                        let ticket = chance.string({
-                            length: 128,
+                        let ticket = "ST-2156453-"+chance.string({
+                            length: 20,
                             alpha: true,
                             numeric: true
                         })

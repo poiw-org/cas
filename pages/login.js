@@ -6,13 +6,15 @@ import axios from "axios";
 import Head from 'next/head'
 import Alert from 'react-bootstrap/Alert'
 import ProgressBar from 'react-bootstrap/ProgressBar'
+import Router from 'next/router'
 
 class Login extends Component {
 
     static getInitialProps({ query: { service } }){
-        return { service: unescape(service) || false}
+        return { 
+            service: unescape(service) || false
+        }
     }
-
     constructor(props) {
         super(props)
 
@@ -21,7 +23,41 @@ class Login extends Component {
             emailValidation: {tried: false, emailExists: false},
             password: "",
             message: {text:'', variant:'danger'},
-            processing: false
+            processing: false,
+            fullName: "",
+            phone: "",
+            service: props.service,
+            schools:[
+                "Ανωτάτη Σχολή Καλών Τεχνών (Α.Σ.Κ.Τ.)",
+                "Αριστοτέλειο Πανεπιστήμιο Θεσσαλονίκης (Α.Π.Θ.)",
+                "Διεθνές Πανεπιστήμιο Ελλάδος",
+                "Εθνικό Μετσόβιο Πολυτεχνείο (Ε.Μ.Π.)",
+                "Ελληνικό Μεσογειακό Πανεπιστήμιο (ΕΛ.ΜΕ.ΠΑ.)",
+                "Γεωπονικό Πανεπιστήμιο Αθηνών (Γ.Π.Α.)",
+                "Εθνικό και Καποδιστριακό Πανεπιστήμιο Αθηνών (Ε.Κ.Π.Α.)",
+                "Πανεπιστήμιο Δυτικής Αττικής (ΠΑ.Δ.Α.)",
+                "Πανεπιστήμιο Πατρών",
+                "Πανεπιστήμιο Κρήτης",
+                "Πολυτεχνείο Κρήτης",
+                "Πανεπιστήμιο Ιωαννίνων",
+                "Δημοκρίτειο Πανεπιστήμιο Θράκης (Δ.Π.Θ.)",
+                "Πανεπιστήμιο Θεσσαλίας",
+                "Οικονομικό Πανεπιστήμιο Αθηνών (Ο.Π.Α.)",
+                "Πάντειο Πανεπιστήμιο Κοινωνικών και Πολιτικών Επιστημών",
+                "Πανεπιστήμιο Πειραιώς (ΠΑ.ΠΕΙ.)",
+                "Πανεπιστήμιο Μακεδονίας (ΠΑ.ΜΑΚ.)",
+                "Πανεπιστήμιο Δυτικής Μακεδονίας",
+                "Πανεπιστήμιο Πελοποννήσου (ΠΑ.ΠΕΛ.)",
+                "Πανεπιστήμιο Αιγαίου",
+                "Ιόνιο Πανεπιστήμιο",
+                "Χαροκόπειο Πανεπιστήμιο",
+                "Ελληνικό Ανοικτό Πανεπιστήμιο (Ε.Α.Π.)",
+                "Ανώτατη Σχολή Παιδαγωγικής και Τεχνολογικής Εκπαίδευσης (Α.Σ.ΠΑΙ.Τ.Ε.)",
+                "Δευτεροβάθμια Εκπαίδευση (Γυμνάσιο/Λύκειο)",
+                "ΙΕΚ",
+                "Δεν φοιτώ σε κανένα ίδρυμα αυτήν τη στιγμή"
+            ],
+            school: "Ελληνικό Μεσογειακό Πανεπιστήμιο (ΕΛ.ΜΕ.ΠΑ.)",
         };
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -38,12 +74,42 @@ class Login extends Component {
             message: {text:""}
         })
         event.preventDefault()
-        const email = this.state.email;
-        const password = this.state.password;
-        const service = this.state.service;
+        const {email, password, service, fullName, phone, school, emailValidation} = this.state;
         const url = this.props.apiUrl;
 
-        if(email && !password){
+        if(emailValidation.tried && !emailValidation.emailExists){
+            let self = this 
+
+            self.setState({
+                processing: true
+            })
+
+            await axios.post('../../api/register',{
+                email,
+                fullName,
+                phone,
+                school,
+                password
+            }).then(({body})=>{
+                self.setState({
+                    message: {
+                        text: `Σούπερ! Σου έχουμε στείλει ένα email που περιέχει ένα σύνδεσμο ενεργοποίησης λογαριασμού. Μόλις ολοκληρώσεις την διαδικασία, δοκίμασε να συνδεθείς πάλι σε αυτό το παράθυρο.`,
+                        variant: "success"
+                    }
+                })
+
+                self.setState({
+                    processing: false,
+                    emailValidation:{
+                        tried: false,
+                        emailExists: false
+                    },
+                    password: ""
+                })
+
+            })
+        }
+        else if(email && !password){
             let {data:{emailExists}} = await axios
                 .post('../../api/emailExists',{
                     email: email
@@ -61,15 +127,15 @@ class Login extends Component {
             try{
             const {data} = await axios
                 .post('../../api/login',{
-                    email: email,
-                    password: password,
+                    email,
+                    password,
                     service
                 })
             ticket = data.ticket || false
             }catch(e){
                 this.setState({
                     message: {
-                        text: "Λάθος κωδικός πρόσβασης",
+                        text: "Λάθος κωδικός πρόσβασης ή μη επιτρεπτή χρήση (401).",
                         variant: "danger"
                     }
                 })
@@ -81,7 +147,8 @@ class Login extends Component {
                         variant: "success"
                     }
                 })
-                console.log(ticket)
+                
+                Router.push(`${service}?ticket=${ticket}`)
             }
 
 
@@ -162,6 +229,38 @@ class Login extends Component {
                             </p>
                         </div>
                     </Form>
+                    ):false}
+
+                    { this.state.emailValidation.tried && !this.state.emailValidation.emailExists ? (
+                        <Form className="register row" onSubmit={this.handleSubmit}>
+                            <p className="col-9"><i className="fas fa-lock"></i> Σοκ! Φαίνεται ότι δεν είσαι μέλος στο po/iw! <b>Φτιάξε ένα ακάουντ ράιτ ΝΑΟΥ:</b></p>
+                            <div className="col-12">
+                                <Form.Group className="row">
+                                    <Form.Control type="text" className="col-12 col-md-8" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
+                                    <Form.Control type="text" className="col-12 col-md-8" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                    <Form.Control type="text" className="col-12 col-md-8" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                    <label className="col-12 p-2">Ίδρυμα φοίτησης:</label>
+                                    <Form.Control as="select" size="md" value={this.state.school} className="col-12 col-md-8 schoolSelector" onChange={this.handleChange.bind(this, 'school')}>
+                                        {this.state.schools.map(school=>{
+                                            return(
+                                                <option>{school}</option>
+                                            )
+                                        })}
+                                    </Form.Control>
+                                    <Form.Control type="password" className="col-12 col-md-8" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
+                                </Form.Group>
+                            </div>
+                            <div className="col-12">
+                                <Button className="btn register" variant="primary" type="submit">
+                                    Εγγραφή 
+                                </Button>                   
+                            </div>
+                            <div className="col-12">
+                                <p style={{marginTop: 120 + 'px'}}>
+                                    <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u><br/>Το σύστημα επαναφοράς κωδικού είναι ακόμη υπό ανάπτυξη. Παρακαλούμε επικοινωνίστε με την ομάδα.
+                                </p>
+                            </div>
+                        </Form>
                     ):false}
                     <Logo></Logo>
                 </div>

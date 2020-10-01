@@ -3,46 +3,59 @@ const sha256 = require('crypto-js/sha256')
 var chance = require('chance')
 chance = new chance()
 
-module.exports = (req,res) =>{
-    if(req.method != 'POST') res.status(400).json({
-        message: 'This endpoint receives only POST requests.'
-    })
+module.exports = (req, res) => {
+    if (req.method != 'POST') res.redirect(`../../login${req.query.service != null ? '?service='+escape(req.query.service) : ""}`)
 
     karavaki()
-        .then(db=>{
-            if(!req.body.email){
+        .then(db => {
+            let {
+                email,
+                password,
+                service
+            } = req.body
+
+            if (!email || !service) {
                 res.status(400).json({
-                    message: "No email was supplied."
+                    message: "Insufficient amount of data given."
                 })
             }
 
-            let email = req.body.email
+            if (password) {
+                password = sha256(password).toString()
 
-            if(req.body.password){
-                let password = req.body.password
-                password = sha256(sha256(password.length) + password + sha256(email)).toString()
-                
-                db.collection("users").find({email: email, password: password}).toArray(async (err,user)=>{
-                    if(user.length > 0){
-                        let ticket = chance.string({ length: 128,  alpha: true, numeric: true })
+                db.collection("users").find({
+                    email,
+                    password
+                }).toArray(async (err, user) => {
+                    if (user.length > 0) {
+                        let ticket = chance.string({
+                            length: 128,
+                            alpha: true,
+                            numeric: true
+                        })
 
                         await db.collection("tickets").insert({
-                            ticket: ticket,
-                            email: email
+                            ticket,
+                            email,
+                            service
                         })
 
                         res.json({
                             ticket: ticket
                         })
-                    }else{
+                    } else {
                         res.status(400).json({
                             message: 'Email or password incorrect.'
                         })
                     }
                 })
+            } else {
+                res.status(400).json({
+                    message: 'No authentication method available.'
+                })
             }
         })
-        .catch(e=>{
+        .catch(e => {
             console.log(e)
             res.status(500)
         })

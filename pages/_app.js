@@ -5,7 +5,7 @@ import '@fortawesome/fontawesome-free/js/solid';
 import '@fortawesome/fontawesome-free/js/regular';
 import '@fortawesome/fontawesome-free/js/brands';
 
-function MyApp({ Component, pageProps }) {
+function CAS({ Component, pageProps }) {
   return <Component {...pageProps} />
 }
-export default MyApp
+export default CAS

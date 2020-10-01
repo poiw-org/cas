@@ -17,7 +17,7 @@ module.exports = async ({query},res)=>{
             res.send(xml({
                 "cas:serviceResponse":[{
                     "cas:authenticationSuccess":[{
-                        "cas:user": user.email
+                        "cas:user": "donfn"
                     }]
                 }]
             }))

@@ -14,13 +14,13 @@ const validateEmail = (email) => {
 module.exports = (req,res) => {
     karavaki()
         .then(async db=>{
-            let {email, fullName, school, password, recaptcha} = req.body
+            let {email, fullName, school, phone, password, recaptcha} = req.body
 
             await captcha
                 .validate(recaptcha)
                 .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
-            if(!email || !fullName || !school || !password) res.status(400).send('Missing required information.')
+            if(!email || !fullName || !school || !password || !phone) res.status(400).send('Missing required information.')
             
             if(!validateEmail(email)) res.status(400).send('Incorrect email format.')
 
@@ -46,6 +46,7 @@ module.exports = (req,res) => {
                 password,
                 school,
                 fullName,
+                phone,
                 username,
                 registrationToken
             })

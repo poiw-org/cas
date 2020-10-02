@@ -2,7 +2,7 @@ module.exports = {
     async headers() {
       return [
         {
-          source: '/api/serviceValidate',
+          source: '/api/cas/serviceValidate',
           headers: [
             {
               key: 'Content-Type',
@@ -11,7 +11,7 @@ module.exports = {
           ],
         },
         {
-            source: '/api/proxyValidate',
+            source: '/api/cas/proxyValidate',
             headers: [
               {
                 key: 'Content-Type',
@@ -24,8 +24,8 @@ module.exports = {
     async rewrites() {
         return [
           {
-            source: '/api/proxyValidate',
-            destination: '/api/serviceValidate',
+            source: '/api/cas/proxyValidate',
+            destination: '/api/cas/serviceValidate',
           },
         ]
       },

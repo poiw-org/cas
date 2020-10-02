@@ -60,11 +60,33 @@ class Login extends Component {
             school: "Ελληνικό Μεσογειακό Πανεπιστήμιο (ΕΛ.ΜΕ.ΠΑ.)",
         };
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.resetPassword = this.resetPassword.bind(this);
     }
 
     handleChange(key, event) {
         this.setState({
             [key]: event.target.value
+        })
+    }
+
+    async resetPassword(event){    
+        event.preventDefault()    
+        this.setState({
+            processing: true,
+            message: {text:""}
+        })
+
+        let {email} = this.state
+        await axios.post('../../api/resetPassword',{
+            email
+        })
+        
+        this.setState({
+            processing:false,
+            message:{
+                text: "Έχουμε στείλει ένα link επαναφοράς κωδικού στο mail σου. Αφού τελειώσεις την διαδικασία σε άλλο παράθυρο, επέστρεψε εδώ.",
+                variant: "success"
+            }
         })
     }
 
@@ -198,9 +220,11 @@ class Login extends Component {
                             </Form.Group>
                         </div>
                         <div className="col-12 col-md-4">
-                            <Button className="btn" variant="primary" type="submit">
-                                Επόμενο
-                            </Button>                   
+                            {!this.state.processing ? (
+                                <Button className="btn" variant="primary" type="submit">
+                                    Επόμενο
+                                </Button>  
+                            ):false}              
                         </div>
                         <div className="col-12">
                             <p style={{marginTop: 40 + 'px'}}>
@@ -219,13 +243,15 @@ class Login extends Component {
                             </Form.Group>
                         </div>
                         <div className="col-12 col-md-4">
-                            <Button className="btn" variant="primary" type="submit">
-                                Είσοδος 
-                            </Button>                   
+                            {!this.state.processing ? (
+                                <Button className="btn" variant="primary" type="submit">
+                                    Είσοδος
+                                </Button>  
+                            ):false}                    
                         </div>
                         <div className="col-12"> 
                             <p style={{marginTop: 40 + 'px'}}>
-                                <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u><br/>Το σύστημα επαναφοράς κωδικού είναι ακόμη υπό ανάπτυξη. Παρακαλούμε επικοινωνίστε με την ομάδα.
+                                <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u> <a href="#" onClick={this.resetPassword}>Επαναφορά κωδικού πρόσβασης</a>
                             </p>
                         </div>
                     </Form>

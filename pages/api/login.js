@@ -11,7 +11,7 @@ module.exports = (req, res) => {
             let {
                 email,
                 password,
-                service
+                service,
             } = req.body
 
             if (!email || !service) {
@@ -28,13 +28,30 @@ module.exports = (req, res) => {
                     password
                 }).toArray(async (err, user) => {
                     if (user.length > 0) {
-                        let ticket = "ST-2156453-"+chance.string({
+                        let ticket = 
+                        `ST-${chance.string({
+                            length: 7,
+                            numeric: true
+                        })}-${chance.string({
                             length: 20,
                             alpha: true,
                             numeric: true
+                        })}`
+
+                        await db.collection("users").updateOne(
+                            {email: user.email},
+                            {$set: {
+                                    passwordResetToken: ""
+                                }
+                            }, 
+                        )
+
+                        await db.collection("tickets").deleteMany({
+                            email
                         })
 
                         await db.collection("tickets").insert({
+                            "createdAt": new Date(),
                             ticket,
                             email,
                             service

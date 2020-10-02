@@ -38,4 +38,15 @@ input:focus{
 
 .login, .register{
     margin-top:60px;
+
+    transform: translatex(-10vw);
+    opacity: 0;
+
+    animation: fade-up 0.6s ease-in-out forwards;
+    @keyframes fade-up {
+        100%{
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 }

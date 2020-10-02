@@ -46,7 +46,7 @@ module.exports = (req,res) => {
                 registrationToken
             })
 
-            let activationLink = `${process.env.NODE_ENV == "development" ? "http://localhost:3000/api/activateAccount?t=" : "https://cas.poiw.org/api/activateAccount?t="}${registrationToken}`
+            let activationLink = `${process.env.NODE_ENV == "development" ? "http://localhost:3000/api/activateAccount?t=" : "https://auth.poiw.org/api/activateAccount?t="}${registrationToken}`
             await send({
                 email,
                 fullName,

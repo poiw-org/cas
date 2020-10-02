@@ -24,9 +24,6 @@ module.exports = async ({
 
             res.send(xml({
                 "cas:serviceResponse": [
-                    {"_attr":
-                        {"xmlns:cas": "https://cas.donfn.vercel.app/api"}
-                    },
                     {
                         "cas:authenticationSuccess": [{
                                 "cas:user": user.username
@@ -40,6 +37,9 @@ module.exports = async ({
                                 },
                                 {
                                     "cas:school": user.school
+                                },
+                                {
+                                    "cas:phone": user.phone
                                 },
                             ]}
                         ]

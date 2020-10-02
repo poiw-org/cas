@@ -1,7 +1,10 @@
-import Head from 'next/head'
+import Logo from '../components/logo'
 
 export default function Home() {
   return (
-    <h1>po/iw CAS</h1>
+    <div className="container">
+      <Logo></Logo>
+    </div>
+    
   )
 }

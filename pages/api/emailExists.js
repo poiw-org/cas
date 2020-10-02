@@ -17,12 +17,10 @@ module.exports = (req,res) =>{
 
             db.collection("users").find({email: email}).toArray(async (err,user)=>{
                 if(user.length > 0){
-                    console.log("exists")
                     res.json({
                        emailExists: true 
                     })
                 }else{
-                    console.log("not exists")
                     res.json({
                         emailExists: false 
                      })

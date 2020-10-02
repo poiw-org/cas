@@ -1,4 +1,4 @@
-const karavaki = require('./_lib/karavaki')
+const karavaki = require('../_lib/karavaki')
 import xml from "xml"
 
 module.exports = async ({
@@ -21,8 +21,6 @@ module.exports = async ({
             })
 
             if (!user) res.status(400).send()
-
-            console.log(user)
 
             res.send(xml({
                 "cas:serviceResponse": [

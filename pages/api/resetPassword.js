@@ -3,12 +3,19 @@ const karavaki = require('./_lib/karavaki')
 var chance = require('chance')
 chance = new chance()
 const sha256 = require('crypto-js/sha256')
+import captcha from './_lib/recaptcha'
+
 
 
 module.exports = async ({body,query,method},res) => {
     const db = await karavaki()
 
-    if (body.email){        
+    if (body.email){   
+
+        await captcha
+            .validate(body.recaptcha)
+            .catch(e=>res.status(400).send('Recaptcha verification failed'))
+
         let user = await db.collection("users").findOne({email: body.email})
 
         if (!user) res.status(400).send("This user doesn\'t exist.")

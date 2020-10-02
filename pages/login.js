@@ -1,12 +1,13 @@
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Logo from '../components/logo'
-import { Component } from "react"
+import { Component, createRef } from "react"
 import axios from "axios";
 import Head from 'next/head'
 import Alert from 'react-bootstrap/Alert'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Router from 'next/router'
+import ReCAPTCHA from "react-google-recaptcha";
 
 class Login extends Component {
 
@@ -26,6 +27,7 @@ class Login extends Component {
             processing: false,
             fullName: "",
             phone: "",
+            recaptchaRef : React.createRef(),
             service: props.service,
             schools:[
                 "Ανωτάτη Σχολή Καλών Τεχνών (Α.Σ.Κ.Τ.)",
@@ -70,15 +72,21 @@ class Login extends Component {
     }
 
     async resetPassword(event){    
-        event.preventDefault()    
+        event.preventDefault()
+         
         this.setState({
             processing: true,
             message: {text:""}
         })
+        
+        await this.state.recaptchaRef.current.reset()
+        const recaptcha = await this.state.recaptchaRef.current.executeAsync();
+        
 
         let {email} = this.state
         await axios.post('../../api/resetPassword',{
-            email
+            email,
+            recaptcha
         })
         
         this.setState({
@@ -106,11 +114,15 @@ class Login extends Component {
                 processing: true
             })
 
+            await this.state.recaptchaRef.current.reset()
+            const recaptcha = await this.state.recaptchaRef.current.executeAsync();
+
             await axios.post('../../api/register',{
                 email,
                 fullName,
                 phone,
                 school,
+                recaptcha,
                 password
             }).then(({body})=>{
                 self.setState({
@@ -146,12 +158,16 @@ class Login extends Component {
 
         }else if(email && password){
             let ticket
+            await this.state.recaptchaRef.current.reset()
+            const recaptcha = await this.state.recaptchaRef.current.executeAsync();
+
             try{
             const {data} = await axios
                 .post('../../api/login',{
                     email,
                     password,
-                    service
+                    service,
+                    recaptcha
                 })
             ticket = data.ticket || false
             }catch(e){
@@ -213,7 +229,7 @@ class Login extends Component {
                         
                     { !this.state.emailValidation.tried ? (
                     <Form className="login email row" onSubmit={this.handleSubmit} >
-                        <p className="col-9"><i className="fas fa-lock"></i> Καλωσήρθατε στο κεντρικό σύστημα ταυτοποίησης (CAS) του po/iw.</p>
+                        <p className="col-9"><i className="fas fa-user"></i> Καλωσήρθατε στο κεντρικό σύστημα ταυτοποίησης (CAS) του po/iw.</p>
                         <div className="col-12 col-md-8">
                             <Form.Group>
                                 <Form.Control type="email" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Διεύθυνση Email" required/>
@@ -283,6 +299,11 @@ class Login extends Component {
                             </div>
                         </Form>
                     ):false}
+                    <ReCAPTCHA
+                        ref={this.state.recaptchaRef}
+                        size="invisible"
+                        sitekey="6Lcp39IZAAAAAFZSr3LpnErH1UTVcYL4SjeZVUx4"
+                    />
                     <Logo></Logo>
                 </div>
             </div>

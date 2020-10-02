@@ -3,6 +3,8 @@ import {send} from "./_lib/email"
 const sha256 = require('crypto-js/sha256')
 var chance = require('chance')
 chance = new chance()
+import captcha from './_lib/recaptcha'
+
 
 const validateEmail = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -12,7 +14,11 @@ const validateEmail = (email) => {
 module.exports = (req,res) => {
     karavaki()
         .then(async db=>{
-            let {email, fullName, school, password} = req.body
+            let {email, fullName, school, password, recaptcha} = req.body
+
+            await captcha
+                .validate(recaptcha)
+                .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
             if(!email || !fullName || !school || !password) res.status(400).send('Missing required information.')
             
@@ -31,9 +37,7 @@ module.exports = (req,res) => {
             while(!usernameIsAvailable){
                 username = `poiw_${chance.string({ length: 12,  alpha: true, numeric: true })}`
                 usernameIsAvailable = await db.collection("users").findOne({username})
-                console.log(username,usernameIsAvailable)
-
-
+                if(usernameIsAvailable == null) usernameIsAvailable = await db.collection("pendingRegistrations").findOne({username})
                 if(usernameIsAvailable == null) usernameIsAvailable = true
             }
             

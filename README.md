@@ -1,5 +1,8 @@
 ## po/iw CAS
 
+Ο σέρβερ του po/iw CAS είναι μια ευγενική χορηγία του Vercel:\
+[![Powered by Vercel](https://raw.githubusercontent.com/poiw-org/cas/master/public/assets/powered-by-vercel.svg)](https://vercel.com/?utm_source=poiw-org&utm_campaign=oss)\
+\
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=poiw-org_cas&metric=alert_status)](https://sonarcloud.io/dashboard?id=poiw-org_cas)
 
 ## Τι είναι;

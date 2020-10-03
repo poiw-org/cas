@@ -27,6 +27,7 @@ class Login extends Component {
             processing: false,
             fullName: "",
             phone: "",
+            username: "",
             recaptchaRef : React.createRef(),
             service: props.service,
             schools:[
@@ -99,12 +100,16 @@ class Login extends Component {
     }
 
     async handleSubmit(event) {
+        if(this.state.processing) return
+
         this.setState({
             processing: true,
             message: {text:""}
         })
+
         event.preventDefault()
-        const {email, password, service, fullName, phone, school, emailValidation} = this.state;
+
+        const {email, username, password, service, fullName, phone, school, emailValidation} = this.state;
         const url = this.props.apiUrl;
 
         if(emailValidation.tried && !emailValidation.emailExists){
@@ -123,16 +128,15 @@ class Login extends Component {
                 phone,
                 school,
                 recaptcha,
-                password
-            }).then(({body})=>{
+                password,
+                username
+            })
+            .then(()=> 
                 self.setState({
                     message: {
-                        text: `Σούπερ! Σου έχουμε στείλει ένα email που περιέχει ένα σύνδεσμο ενεργοποίησης λογαριασμού. Μόλις ολοκληρώσεις την διαδικασία, δοκίμασε να συνδεθείς πάλι σε αυτό το παράθυρο.`,
+                        text: `Τέλεια! Σου έχουμε στείλει ένα email που περιέχει ένα σύνδεσμο ενεργοποίησης λογαριασμού. Μόλις ολοκληρώσεις την διαδικασία, δοκίμασε να συνδεθείς πάλι σε αυτό το παράθυρο.`,
                         variant: "success"
-                    }
-                })
-
-                self.setState({
+                    },
                     processing: false,
                     emailValidation:{
                         tried: false,
@@ -140,20 +144,32 @@ class Login extends Component {
                     },
                     password: ""
                 })
-
+            )
+            .catch(e=>{
+                self.setState({
+                    message: {
+                        text: e.response.data,
+                        variant: "warning"
+                    },
+                    processing: false,
+                })
             })
         }
         else if(email && !password){
-            let {data:{emailExists}} = await axios
+            let {data:{emailExists, pendingActivation}} = await axios
                 .post('../../api/emailExists',{
                     email: email
                 })
-            console.log(emailExists)
+            
             this.setState({
                 emailValidation:{
                     tried: true,
                     emailExists: emailExists
-                }
+                },
+                message: pendingActivation ? {
+                    text: "Έχεις ήδη υποβάλει αίτημα εγγραφής και εκκρεμεί η ενεργοποίηση του λογαριασμού σου. Αν ξανα-υποβάλεις εγγραφή, η προηγούμενη προσπάθεια θα ακυρωθεί.",
+                    variant: "warning"
+                } : {}
             })
 
         }else if(email && password){
@@ -248,7 +264,10 @@ class Login extends Component {
                             </p>
                         </div>
                     </Form>
-                    ):false}
+                    ):(
+                        <a href="#" className="goBack" onClick={()=>{ this.setState({emailValidation: {tried: false, emailExists: false}})}}><i className="fas fa-arrow-left"></i> Πίσω</a>
+
+                    )}
 
                     { this.state.emailValidation.tried && this.state.emailValidation.emailExists ? (
                     <Form className="login password row" onSubmit={this.handleSubmit}>
@@ -279,7 +298,7 @@ class Login extends Component {
                             <div className="col-12">
                                 <Form.Group className="row">
                                     <Form.Control type="text" className="col-12 col-md-6" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
-                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.username} onChange={this.handleChange.bind(this, 'username')} placeholder="Username" required/>
                                     <Form.Control type="text" className="col-12 col-md-6" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
                                     <Form.Control type="password" className="col-12 col-md-6" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
                                     <label className="col-12 p-2">Ίδρυμα φοίτησης:</label>

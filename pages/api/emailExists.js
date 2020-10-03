@@ -6,7 +6,7 @@ module.exports = (req,res) =>{
     })
 
     karavaki()
-        .then(db=>{
+        .then(async db=>{
             if(!req.body.email){
                 res.status(400).json({
                     message: "No email was supplied."
@@ -15,17 +15,22 @@ module.exports = (req,res) =>{
 
             let {email} = req.body
 
-            db.collection("users").find({email: email}).toArray(async (err,user)=>{
-                if(user.length > 0){
-                    res.json({
-                       emailExists: true 
-                    })
-                }else{
-                    res.json({
-                        emailExists: false 
-                     })
-                }
-            })
+            let user = await db.collection("users").findOne({email})
+
+            if(user){
+
+                res.json({
+                   emailExists: true 
+                })
+
+            }else{
+                user = await db.collection("pendingRegistrations").findOne({email})
+
+                res.json({
+                    emailExists: false,
+                    pendingActivation: user ? true : false
+                 })
+            }
         })
         .catch(e=>{
             console.log(e)

@@ -65,7 +65,7 @@ module.exports = (req, res) => {
                         })
 
                         send({
-                            text: `Νέα είσοδος από IP ${req.headers('x-forwarded-for')} στην υπηρεσία ${service}. Αν δεν ήσουν εσύ, άλλαξε κωδικό άμεσα και ενημέρωσε την ομάδα!`,
+                            text: `Νέα είσοδος από IP ${req.headers['x-forwarded-for']} στην υπηρεσία ${service}. Αν δεν ήσουν εσύ, άλλαξε κωδικό άμεσα και ενημέρωσε την ομάδα!`,
                             email,
                             subject: "Νέα είσοδος μέσω του po/iw CAS"
                         })

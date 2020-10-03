@@ -4,7 +4,7 @@ const sha256 = require('crypto-js/sha256')
 var chance = require('chance')
 chance = new chance()
 import captcha from './_lib/recaptcha'
-
+import passwordValidator from "./_lib/passwordValidator"
 
 const validateEmail = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -14,32 +14,40 @@ const validateEmail = (email) => {
 module.exports = (req,res) => {
     karavaki()
         .then(async db=>{
-            let {email, fullName, school, phone, password, recaptcha} = req.body
+            let {email, username, fullName, school, phone, password, recaptcha} = req.body
+            username = username.toLowerCase()
+            email = email.toLowerCase()
 
             await captcha
                 .validate(recaptcha)
                 .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
             if(!email || !fullName || !school || !password || !phone) res.status(400).send('Missing required information.')
+
+            await passwordValidator(password)
+                .catch(e=>{
+                    res.status(400).send(e)
+                    return
+                })
             
             if(!validateEmail(email)) res.status(400).send('Incorrect email format.')
 
             let emailExists = await db.collection('users').findOne({email})
+            let usernameExists = await db.collection("users").findOne({username})
 
-            if(emailExists) res.status(400).send('User already exists.')
+            if(emailExists) {
+                res.status(400).send('Υπάρχει ήδη χρήστης με αυτό το email.')
+                return
+            }
+        
+            if(usernameExists){
+                res.status(400).send('Υπάρχει ήδη χρήστης με αυτό το username.')
+                return
+            }
 
             password = sha256(password).toString()
 
             let registrationToken = chance.string({ length: 128,  alpha: true, numeric: true })
-
-            let usernameIsAvailable = false
-            let username
-            while(!usernameIsAvailable){
-                username = `poiw_${chance.string({ length: 12,  alpha: true, numeric: true })}`
-                usernameIsAvailable = await db.collection("users").findOne({username})
-                if(usernameIsAvailable == null) usernameIsAvailable = await db.collection("pendingRegistrations").findOne({username})
-                if(usernameIsAvailable == null) usernameIsAvailable = true
-            }
             
             await db.collection("pendingRegistrations").insertOne({
                 email,

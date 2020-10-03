@@ -3,6 +3,8 @@ const sha256 = require('crypto-js/sha256')
 var chance = require('chance')
 chance = new chance()
 import captcha from './_lib/recaptcha'
+import {send} from "./_lib/email"
+
 
 module.exports = (req, res) => {
     if (req.method != 'POST') res.redirect(`../../login${req.query.service != null ? '?service='+escape(req.query.service) : ""}`)
@@ -60,6 +62,12 @@ module.exports = (req, res) => {
                             ticket,
                             email,
                             service
+                        })
+
+                        send({
+                            text: `Νέα είσοδος από IP ${req.headers('x-forwarded-for')} στην υπηρεσία ${service}. Αν δεν ήσουν εσύ, άλλαξε κωδικό άμεσα και ενημέρωσε την ομάδα!`,
+                            email,
+                            subject: "Νέα είσοδος μέσω του po/iw CAS"
                         })
 
                         res.json({

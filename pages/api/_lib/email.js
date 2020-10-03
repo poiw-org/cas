@@ -26,7 +26,7 @@ module.exports = {
                         }],
                         Subject: subject,
                         TextPart: text,
-                        HTMLPart: html
+                        HTMLPart: html || text
                     }]
                 })
                 .then((result) => {

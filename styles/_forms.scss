@@ -37,7 +37,6 @@ input:focus{
 }
 
 .login, .register{
-    margin-top:60px;
 
     transform: translatex(-10vw);
     opacity: 0;
@@ -49,6 +48,18 @@ input:focus{
             opacity: 1;
         }
     }
+}
+
+.login{
+    height: calc(80vh - 180px);
+    min-height: 250px;
+    margin-top:60px;
+}
+
+.register{
+    height: 100vh;
+    min-height: 600px;
+    margin-top:60px;
 }
 
 .goBack{

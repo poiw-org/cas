@@ -312,9 +312,11 @@ class Login extends Component {
                                 </Form.Group>
                             </div>
                             <div className="col-12">
-                                <Button className="btn register" variant="primary" type="submit">
-                                    Εγγραφή 
-                                </Button>                   
+                                {!this.state.processing ? (
+                                    <Button className="btn" variant="primary" type="submit">
+                                        Εγγραφή 
+                                    </Button>                   
+                                ): false}
                             </div>
                         </Form>
                     ):false}

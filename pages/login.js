@@ -245,7 +245,7 @@ class Login extends Component {
                         
                     { !this.state.emailValidation.tried ? (
                     <Form className="login email row" onSubmit={this.handleSubmit} >
-                        <p className="col-9"><i className="fas fa-user"></i> Καλωσήρθατε στο κεντρικό σύστημα ταυτοποίησης (CAS) του po/iw.</p>
+                        <p className="col-9"><i className="fas fa-user"></i> Καλωσήρθες στο κεντρικό σύστημα ταυτοποίησης (CAS) του po/iw.</p>
                         <div className="col-12 col-md-8">
                             <Form.Group>
                                 <Form.Control type="email" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Διεύθυνση Email" required/>
@@ -260,7 +260,7 @@ class Login extends Component {
                         </div>
                         <div className="col-12">
                             <p style={{marginTop: 40 + 'px'}}>
-                                <u><b>Εισάγετε το email σας και πατήστε επόμενο.</b></u><br/>Αν δεν έχετε λογαριασμό στο po/iw, τότε θα σας ζητηθεί να δημιουργήσετε έναν καινούριο.
+                                <u><b>Εισάγετε το email σας και πατήστε επόμενο.</b></u><br/>Αν δεν έχεις λογαριασμό στο po/iw, τότε θα σου ζητηθεί να δημιουργήσεις έναν καινούριο.
                             </p>
                         </div>
                     </Form>
@@ -271,7 +271,7 @@ class Login extends Component {
 
                     { this.state.emailValidation.tried && this.state.emailValidation.emailExists ? (
                     <Form className="login password row" onSubmit={this.handleSubmit}>
-                        <p className="col-9"><i className="fas fa-lock"></i> Εισάγετε τον κωδικό πρόσβασής σας στο po/iw.</p>
+                        <p className="col-9"><i className="fas fa-lock"></i> Πληκτρολόγησε τον κωδικό πρόσβασής σου στο po/iw.</p>
                         <div className="col-12 col-md-8">
                             <Form.Group>
                                 <Form.Control type="password" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός Πρόσβασης" required/>

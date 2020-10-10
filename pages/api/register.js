@@ -35,6 +35,9 @@ module.exports = (req,res) => {
             let emailExists = await db.collection('users').findOne({email})
             let usernameExists = await db.collection("users").findOne({username})
 
+            let blocked_usernames = await db.collection("config").findOne({name: 'blocked_usernames'}) 
+
+
             if(emailExists) {
                 res.status(400).send('Υπάρχει ήδη χρήστης με αυτό το email.')
                 return
@@ -42,6 +45,11 @@ module.exports = (req,res) => {
         
             if(usernameExists){
                 res.status(400).send('Υπάρχει ήδη χρήστης με αυτό το username.')
+                return
+            }
+
+            if(blocked_usernames.value.includes(username)) {
+                res.status(400).send('Η χρήση αυτού του username έχει απαγορευτεί.')
                 return
             }
 

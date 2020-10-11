@@ -8,7 +8,7 @@ module.exports = async ({query},res) => {
             let user = await db.collection("pendingRegistrations").findOne({registrationToken: query.t})
 
             if(!user){
-                res.status(401).send("Ο σύνδεσμός έχει ήδη χρησιμοποιηθεί, έχει λήξει ή δεν αντιστοιχεί σε κάποιο χρήστη.")
+                res.redirect("../../failed-activation")
                 return
             }
 
@@ -18,7 +18,7 @@ module.exports = async ({query},res) => {
             await db.collection("pendingRegistrations").deleteMany({email: user.email})
             await db.collection("users").insertOne(user)
 
-            res.redirect("../../success")
+            res.redirect("../../successful-activation")
         })
 
 }

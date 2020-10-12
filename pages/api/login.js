@@ -55,11 +55,8 @@ module.exports = (req, res) => {
                         }, 
                     )
 
-                    await db.collection("tickets").deleteMany({
-                        email
-                    })
 
-                    await db.collection("users").updateOne(
+                    await db.collection("tickets").updateOne(
                         {_id: unfinished_ticket._id},
                         {$set: {
                                 ticket,

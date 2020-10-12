@@ -8,14 +8,15 @@ import {send} from "./_lib/email"
 
 module.exports = (req, res) => {
     if (req.method != 'POST') res.redirect(`../../login${req.query.service != null ? '?service='+escape(req.query.service) : ""}`)
-
+    console.log(req.body)
     karavaki()
         .then(async db => {
             let {
                 email,
                 password,
                 service,
-                recaptcha
+                recaptcha,
+                twofactor
             } = req.body
 
             if (!email || !service) {
@@ -23,63 +24,98 @@ module.exports = (req, res) => {
                     message: "Insufficient amount of data given."
                 })
             }
-            if (password) {
+            if (twofactor) {
+                console.log(twofactor)
                 await captcha
                     .validate(recaptcha)
                     .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
                 password = sha256(password).toString()
 
-                db.collection("users").find({
-                    email,
-                    password
-                }).toArray(async (err, user) => {
-                    if (user.length > 0) {
-                        let ticket = 
-                        `ST-${chance.string({
-                            length: 7,
-                            numeric: true
-                        })}-${chance.string({
-                            length: 20,
-                            alpha: true,
-                            numeric: true
-                        })}`
+                let user = await db.collection("users").findOne({ email, password })
 
-                        await db.collection("users").updateOne(
-                            {email: user.email},
-                            {$set: {
-                                    passwordResetToken: ""
-                                }
-                            }, 
-                        )
+                let unfinished_ticket = await db.collection("tickets").findOne({ email, twofactor})
 
-                        await db.collection("tickets").deleteMany({
-                            email
-                        })
+                if (unfinished_ticket){
+                    let ticket = 
+                    `ST-${chance.string({
+                        length: 7,
+                        numeric: true
+                    })}-${chance.string({
+                        length: 20,
+                        alpha: true,
+                        numeric: true
+                    })}`
 
-                        await db.collection("tickets").insert({
-                            "createdAt": new Date(),
-                            ticket,
-                            email,
-                            service
-                        })
+                    await db.collection("users").updateOne(
+                        {email: user.email},
+                        {$set: {
+                                passwordResetToken: ""
+                            }
+                        }, 
+                    )
 
-                        send({
-                            text: `Νέα είσοδος από IP ${req.headers['x-forwarded-for']} στην υπηρεσία ${service}. Αν δεν ήσουν εσύ, άλλαξε κωδικό άμεσα και ενημέρωσε την ομάδα!`,
-                            email,
-                            subject: "Νέα είσοδος μέσω του po/iw CAS"
-                        })
 
-                        res.json({
-                            ticket: ticket
-                        })
-                    } else {
-                        res.status(400).json({
-                            message: 'Email or password incorrect.'
-                        })
-                    }
+                    await db.collection("users").updateOne(
+                        {_id: unfinished_ticket._id},
+                        {$set: {
+                                ticket,
+                                twofactor: ""
+                            }
+                        }, 
+                    )
+
+                    send({
+                        text: `Νέα είσοδος από IP ${req.headers['x-forwarded-for']} στην υπηρεσία ${service}. Αν δεν ήσουν εσύ, άλλαξε κωδικό άμεσα και ενημέρωσε την ομάδα!`,
+                        email,
+                        subject: "Νέα είσοδος μέσω του po/iw CAS"
+                    })
+
+                    res.json({
+                        ticket: ticket
+                    })
+                } else {
+                    await db.collection("tickets").deleteMany({
+                        email
+                    })
+
+                    res.status(400).json({
+                        message: 'Email, password or 2Factor code incorrect.'
+                    })
+                }
+            } 
+            if(password){
+                await captcha
+                .validate(recaptcha)
+                .catch(e=>res.status(400).send('Recaptcha verification failed'))
+
+                let twofactor = chance.string({
+                    length: 5,
+                    numeric: true
                 })
-            } else {
+
+                await db.collection("tickets").deleteMany({
+                    email
+                })
+
+                await db.collection("tickets").insertOne({
+                    createdAt: new Date(),
+                    email,
+                    twofactor,
+                    service
+                })
+
+                send({
+                    text: `Ο κωδικός επαλήθευσης για την είσοδό σου μέσω του po/iw CAS είναι: ${twofactor}`,
+                    email,
+                    subject: "Κωδικός επαλήθευσης"
+                })
+
+                res.json({
+                    requiresTwoFactor: true
+                })
+            }
+            else {
                 res.status(400).json({
                     message: 'No authentication method available.'
                 })

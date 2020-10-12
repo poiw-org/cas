@@ -34,7 +34,7 @@ module.exports = (req, res) => {
 
                 let user = await db.collection("users").findOne({ email, password })
 
-                let unfinished_ticket = await db.collection("tickets").findOne({ email, twofactor, service})
+                let unfinished_ticket = await db.collection("tickets").findOne({ email, twofactor})
 
                 if (unfinished_ticket){
                     let ticket = 

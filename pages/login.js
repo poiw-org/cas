@@ -8,6 +8,8 @@ import Alert from 'react-bootstrap/Alert'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Router from 'next/router'
 import ReCAPTCHA from "react-google-recaptcha";
+import PinInput from "react-pin-input";
+
 
 class Login extends Component {
 
@@ -21,10 +23,11 @@ class Login extends Component {
 
         this.state = {
             email: "",
-            emailValidation: {tried: false, emailExists: false},
+            stage: 'check_email',
             password: "",
             message: {text:'', variant:'danger'},
             processing: false,
+            twofactor: '',
             fullName: "",
             phone: "",
             username: "",
@@ -63,7 +66,16 @@ class Login extends Component {
             school: "Ελληνικό Μεσογειακό Πανεπιστήμιο (ΕΛ.ΜΕ.ΠΑ.)",
         };
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleTwoFactor = this.handleTwoFactor.bind(this);
         this.resetPassword = this.resetPassword.bind(this);
+    }
+
+    handleTwoFactor(twofactor){
+        this.setState({
+            twofactor
+        })
+
+        if(twofactor.length == 5) this.handleSubmit(twofactor)
     }
 
     handleChange(key, event) {
@@ -81,7 +93,7 @@ class Login extends Component {
         })
         
         await this.state.recaptchaRef.current.reset()
-        const recaptcha = await this.state.recaptchaRef.current.executeAsync();
+        recaptcha = await this.state.recaptchaRef.current.executeAsync();
         
 
         let {email} = this.state
@@ -107,105 +119,138 @@ class Login extends Component {
             message: {text:""}
         })
 
-        event.preventDefault()
+        if(event.preventDefault) event.preventDefault()
 
-        const {email, username, password, service, fullName, phone, school, emailValidation} = this.state;
-        const url = this.props.apiUrl;
+        let recaptcha, ticket
 
-        if(emailValidation.tried && !emailValidation.emailExists){
-            let self = this 
+        const {stage, email, username, password, service, fullName, phone, school, twofactor} = this.state;
 
-            self.setState({
-                processing: true
-            })
+        switch(stage){
+            case "register":
+                console.log("reg")
+                let self = this 
 
-            await this.state.recaptchaRef.current.reset()
-            const recaptcha = await this.state.recaptchaRef.current.executeAsync();
-
-            await axios.post('../../api/register',{
-                email,
-                fullName,
-                phone,
-                school,
-                recaptcha,
-                password,
-                username
-            })
-            .then(()=> 
                 self.setState({
-                    message: {
-                        text: `Τέλεια! Σου έχουμε στείλει ένα email που περιέχει ένα σύνδεσμο ενεργοποίησης λογαριασμού. Μόλις ολοκληρώσεις την διαδικασία, δοκίμασε να συνδεθείς πάλι σε αυτό το παράθυρο.`,
-                        variant: "success"
-                    },
-                    processing: false,
-                    emailValidation:{
-                        tried: false,
-                        emailExists: false
-                    },
-                    password: ""
+                    processing: true
                 })
-            )
-            .catch(e=>{
-                self.setState({
-                    message: {
-                        text: e.response.data,
-                        variant: "warning"
-                    },
-                    processing: false,
-                })
-            })
-        }
-        else if(email && !password){
-            let {data:{emailExists, pendingActivation}} = await axios
-                .post('../../api/emailExists',{
-                    email: email
-                })
-            
-            this.setState({
-                emailValidation:{
-                    tried: true,
-                    emailExists: emailExists
-                },
-                message: pendingActivation ? {
-                    text: "Έχεις ήδη υποβάλει αίτημα εγγραφής και εκκρεμεί η ενεργοποίηση του λογαριασμού σου. Αν ξανα-υποβάλεις εγγραφή, η προηγούμενη προσπάθεια θα ακυρωθεί.",
-                    variant: "warning"
-                } : {}
-            })
-
-        }else if(email && password){
-            let ticket
-            await this.state.recaptchaRef.current.reset()
-            const recaptcha = await this.state.recaptchaRef.current.executeAsync();
-
-            try{
-            const {data} = await axios
-                .post('../../api/login',{
+    
+                await this.state.recaptchaRef.current.reset()
+                recaptcha = await this.state.recaptchaRef.current.executeAsync();
+    
+                await axios.post('../../api/register',{
                     email,
+                    fullName,
+                    phone,
+                    school,
+                    recaptcha,
                     password,
-                    service,
-                    recaptcha
+                    username
                 })
-            ticket = data.ticket || false
-            }catch(e){
-                this.setState({
-                    message: {
-                        text: "Λάθος κωδικός πρόσβασης ή μη επιτρεπτή χρήση (401).",
-                        variant: "danger"
-                    }
+                .then(()=> 
+                    self.setState({
+                        message: {
+                            text: `Τέλεια! Σου έχουμε στείλει ένα email που περιέχει ένα σύνδεσμο ενεργοποίησης λογαριασμού. Μόλις ολοκληρώσεις την διαδικασία, δοκίμασε να συνδεθείς πάλι σε αυτό το παράθυρο.`,
+                            variant: "success"
+                        },
+                        processing: false,
+                        stage: "check_email",
+                        password: ""
+                    })
+                )
+                .catch(e=>{
+                    self.setState({
+                        message: {
+                            text: e.response.data,
+                            variant: "warning"
+                        },
+                        processing: false,
+                    })
                 })
-            }
-            if(ticket){
-                this.setState({
-                    message: {
-                        text: `Επιτυχής είσοδος! Ανακατεύθυνση σε ${this.props.service}...`,
-                        variant: "success"
-                    }
-                })
+            break
+            case "check_email":
+                let {data:{emailExists, pendingActivation}} = await axios
+                    .post('../../api/emailExists',{
+                        email: email
+                    })
                 
-                Router.push(`${service}?ticket=${ticket}`)
-            }
+                this.setState({
+                    stage: emailExists ? "login" : "register",
+                    message: pendingActivation ? {
+                        text: "Έχεις ήδη υποβάλει αίτημα εγγραφής και εκκρεμεί η ενεργοποίηση του λογαριασμού σου. Αν ξανα-υποβάλεις εγγραφή, η προηγούμενη προσπάθεια θα ακυρωθεί.",
+                        variant: "warning"
+                    } : {}
+                })
+            break
+            case "login":
+                console.log('lo on')
+                await this.state.recaptchaRef.current.reset()
+                recaptcha = await this.state.recaptchaRef.current.executeAsync();
+    
+                try{
+                const {data:{ticket, requiresTwoFactor}} = await axios
+                    .post('../../api/login',{
+                        email,
+                        password,
+                        service,
+                        recaptcha
+                    })
+                if(!requiresTwoFactor && ticket){
+                    this.setState({
+                        message: {
+                            text: `Επιτυχής είσοδος! Ανακατεύθυνση σε ${this.props.service}...`,
+                            variant: "success"
+                        }
+                    })
+                    
+                    Router.push(`${service}?ticket=${ticket}`)
+                }else this.setState({
+                        stage: "twofactor"
+                    })
+                }catch(e){
+                    this.setState({
+                        processing: false,
+                        message: {
+                            text: "Λάθος κωδικός πρόσβασης ή μη επιτρεπτή χρήση (401).",
+                            variant: "danger"
+                        }
+                    })
+                }
+            break
+            case "twofactor":
 
+                await this.state.recaptchaRef.current.reset()
+                recaptcha = await this.state.recaptchaRef.current.executeAsync();
+                    try {
+                        const {data:{ticket}} = await axios
+                        .post('../../api/login',{
+                            email,
+                            password,
+                            service,
+                            twofactor: event,
+                            recaptcha
+                        })
 
+                        if(ticket){
+                            this.setState({
+                                message: {
+                                    text: `Επιτυχής είσοδος! Ανακατεύθυνση σε ${this.props.service}...`,
+                                    variant: "success"
+                                }
+                            })
+                            
+                            Router.push(`${service}?ticket=${ticket}`)
+                        }
+                    } catch (error) {
+                        this.setState({
+                            stage: "check_email",
+                            message: {
+                                text: `Λάθος κωδικός επαλήθευσης. Η προσπάθεια εισόδου ακυρώθηκε. Προσπάθησε πάλι.`,
+                                variant: "danger"
+                            }
+                        }) 
+                    }
+
+            break
         }
 
         this.setState({
@@ -242,84 +287,105 @@ class Login extends Component {
                         <title>po/iw CAS</title>
                         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
                     </Head>
-                        
-                    { !this.state.emailValidation.tried ? (
-                    <Form className="login email row" onSubmit={this.handleSubmit} >
-                        <p className="col-9"><i className="fas fa-user"></i> Καλωσήρθες στο κεντρικό σύστημα ταυτοποίησης (CAS) του po/iw.</p>
-                        <div className="col-12 col-md-8">
-                            <Form.Group>
-                                <Form.Control type="email" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Διεύθυνση Email" required/>
-                            </Form.Group>
-                        </div>
-                        <div className="col-12 col-md-4">
-                            {!this.state.processing ? (
-                                <Button className="btn" variant="primary" type="submit">
-                                    Επόμενο
-                                </Button>  
-                            ):false}              
-                        </div>
-                        <div className="col-12">
-                            <p style={{marginTop: 40 + 'px'}}>
-                                <u><b>Εισάγετε το email σας και πατήστε επόμενο.</b></u><br/>Αν δεν έχεις λογαριασμό στο po/iw, τότε θα σου ζητηθεί να δημιουργήσεις έναν καινούριο.
-                            </p>
-                        </div>
-                    </Form>
-                    ):(
-                        <a href="#" className="goBack" onClick={()=>{ this.setState({emailValidation: {tried: false, emailExists: false}})}}><i className="fas fa-arrow-left"></i> Πίσω</a>
+                {this.state.stage != "check_email" ? (<a href="#" className="goBack" onClick={()=>{ this.setState({stage: 'check_email'})}}><i className="fas fa-arrow-left"></i> Πίσω</a>) : false}
 
-                    )}
-
-                    { this.state.emailValidation.tried && this.state.emailValidation.emailExists ? (
-                    <Form className="login password row" onSubmit={this.handleSubmit}>
-                        <p className="col-9"><i className="fas fa-lock"></i> Πληκτρολόγησε τον κωδικό πρόσβασής σου στο po/iw.</p>
-                        <div className="col-12 col-md-8">
-                            <Form.Group>
-                                <Form.Control type="password" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός Πρόσβασης" required/>
-                            </Form.Group>
-                        </div>
-                        <div className="col-12 col-md-4">
-                            {!this.state.processing ? (
-                                <Button className="btn" variant="primary" type="submit">
-                                    Είσοδος
-                                </Button>  
-                            ):false}                    
-                        </div>
-                        <div className="col-12"> 
-                            <p style={{marginTop: 40 + 'px'}}>
-                                <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u> <a href="#" onClick={this.resetPassword}>Επαναφορά κωδικού πρόσβασης</a>
-                            </p>
-                        </div>
-                    </Form>
-                    ):false}
-
-                    { this.state.emailValidation.tried && !this.state.emailValidation.emailExists ? (
-                        <Form className="register row" onSubmit={this.handleSubmit}>
-                            <p className="col-9"><i className="fas fa-lock"></i> Τρομερό! Φαίνεται ότι δεν είσαι μέλος στο po/iw! <b>Φτιάξε έναν λογαριασμό εδώ:</b></p>
-                            <div className="col-12">
-                                <Form.Group className="row">
-                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
-                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.username} onChange={this.handleChange.bind(this, 'username')} placeholder="Username" required/>
-                                    <Form.Control type="text" className="col-12 col-md-6" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
-                                    <Form.Control type="password" className="col-12 col-md-6" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
-                                    <label className="col-12 p-2">Ίδρυμα φοίτησης:</label>
-                                    <Form.Control as="select" size="md" value={this.state.school} className="col-12 col-md-8 schoolSelector" onChange={this.handleChange.bind(this, 'school')}>
-                                        {this.state.schools.map(school=>{
-                                            return(
-                                                <option>{school}</option>
-                                            )
-                                        })}
-                                    </Form.Control>
-                                </Form.Group>
-                            </div>
-                            <div className="col-12">
-                                {!this.state.processing ? (
-                                    <Button className="btn" variant="primary" type="submit">
-                                        Εγγραφή 
-                                    </Button>                   
-                                ): false}
-                            </div>
-                        </Form>
-                    ):false}
+                    {
+                        {
+                            check_email: (
+                                <Form className="login email row" onSubmit={this.handleSubmit} >
+                                    <p className="col-9"><i className="fas fa-user"></i> Καλωσήρθες στο κεντρικό σύστημα ταυτοποίησης (CAS) του po/iw.</p>
+                                    <div className="col-12 col-md-8">
+                                        <Form.Group>
+                                            <Form.Control type="email" value={this.state.email} onChange={this.handleChange.bind(this, 'email')} placeholder="Διεύθυνση Email" required/>
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-12 col-md-4">
+                                        {!this.state.processing ? (
+                                            <Button className="btn" variant="primary" type="submit">
+                                                Επόμενο
+                                            </Button>  
+                                        ):false}              
+                                    </div>
+                                    <div className="col-12">
+                                        <p style={{marginTop: 40 + 'px'}}>
+                                            <u><b>Εισάγετε το email σας και πατήστε επόμενο.</b></u><br/>Αν δεν έχεις λογαριασμό στο po/iw, τότε θα σου ζητηθεί να δημιουργήσεις έναν καινούριο.
+                                        </p>
+                                    </div>
+                                </Form>
+                            ),
+                            login: (
+                                <Form className="login password row" onSubmit={this.handleSubmit}>
+                                    <p className="col-9"><i className="fas fa-lock"></i> Πληκτρολόγησε τον κωδικό πρόσβασής σου στο po/iw.</p>
+                                    <div className="col-12 col-md-8">
+                                        <Form.Group>
+                                            <Form.Control type="password" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός Πρόσβασης" required/>
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-12 col-md-4">
+                                        {!this.state.processing ? (
+                                            <Button className="btn" variant="primary" type="submit">
+                                                Είσοδος
+                                            </Button>  
+                                        ):false}                    
+                                    </div>
+                                    <div className="col-12"> 
+                                        <p style={{marginTop: 40 + 'px'}}>
+                                            <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u> <a href="#" onClick={this.resetPassword}>Επαναφορά κωδικού πρόσβασης</a>
+                                        </p>
+                                    </div>
+                                </Form>
+                            ),
+                            register: (
+                                <Form className="register row" onSubmit={this.handleSubmit}>
+                                    <p className="col-9"><i className="fas fa-lock"></i> Τρομερό! Φαίνεται ότι δεν είσαι μέλος στο po/iw! <b>Φτιάξε έναν λογαριασμό εδώ:</b></p>
+                                    <div className="col-12">
+                                        <Form.Group className="row">
+                                            <Form.Control type="text" className="col-12 col-md-6" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
+                                            <Form.Control type="text" className="col-12 col-md-6" value={this.state.username} onChange={this.handleChange.bind(this, 'username')} placeholder="Username" required/>
+                                            <Form.Control type="text" className="col-12 col-md-6" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                            <Form.Control type="password" className="col-12 col-md-6" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
+                                            <label className="col-12 p-2">Ίδρυμα φοίτησης:</label>
+                                            <Form.Control as="select" size="md" value={this.state.school} className="col-12 col-md-8 schoolSelector" onChange={this.handleChange.bind(this, 'school')}>
+                                                {this.state.schools.map(school=>{
+                                                    return(
+                                                        <option>{school}</option>
+                                                    )
+                                                })}
+                                            </Form.Control>
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-12">
+                                        {!this.state.processing ? (
+                                            <Button className="btn" variant="primary" type="submit">
+                                                Εγγραφή 
+                                            </Button>                   
+                                        ): false}
+                                    </div>
+                                </Form>
+                            ),
+                            twofactor: (
+                                <Form className="login password row" onSubmit={this.handleSubmit}>
+                                    <p className="col-9"><i className="fas fa-lock"></i> Πληκτρολόγησε τον 5-ψήφιο κωδικό επαλήθευσης που σου έχουμε στείλει στο email σου.</p>
+                                    <div className="col-12 col-md-8">
+                                    <PinInput
+                                        length={5}
+                                        focus
+                                        // disabled
+                                        ref={p => (this.state.twofactor = p)}
+                                        type="numeric"
+                                        onChange={e => (this.handleTwoFactor(e))}
+                                        />
+                                    </div>
+                                    <div className="col-12"> 
+                                        <p style={{marginTop: 40 + 'px'}}>
+                                            Το βήμα αυτό μας βοηθά να κρατήσουμε τον λογαριασμό σου ασφαλή. Αν αντιμετοπήσεις κάποιο πρόβλημα, επικοινώνησε με την ομάδα.
+                                        </p>
+                                    </div>
+                                </Form>
+                            )
+                            
+                        }[this.state.stage]
+                    }
                     <ReCAPTCHA
                         ref={this.state.recaptchaRef}
                         size="invisible"

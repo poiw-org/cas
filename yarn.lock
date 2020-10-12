@@ -4425,6 +4425,11 @@ react-overlays@^4.1.0:
     uncontrollable "^7.0.0"
     warning "^4.0.3"
 
+react-pin-input@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/react-pin-input/-/react-pin-input-1.0.1.tgz#be3958d43dcafb493b4ac484d078a86cf372466a"
+  integrity sha512-nppjO8ft5EJspJ9O57TMf2nMG0rBadASVSqQhFEjGio7uSrAWfwu35ZacXl4R7iGT0OKGh3rv1d5s+MWnBAzLw==
+
 react-refresh@0.8.3:
   version "0.8.3"
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.8.3.tgz#721d4657672d400c5e3c75d063c4a85fb2d5d68f"

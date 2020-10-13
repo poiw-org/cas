@@ -65,7 +65,7 @@ module.exports = (req, res) => {
                         }, 
                     )
 
-                    send({
+                    await send({
                         text: `Νέα είσοδος από IP ${req.headers['x-forwarded-for']} στην υπηρεσία ${service}. Αν δεν ήσουν εσύ, άλλαξε κωδικό άμεσα και ενημέρωσε την ομάδα!`,
                         email,
                         subject: "Νέα είσοδος μέσω του po/iw CAS"
@@ -105,7 +105,7 @@ module.exports = (req, res) => {
                     service
                 })
 
-                send({
+                await send({
                     text: `Ο κωδικός επαλήθευσης για την είσοδό σου μέσω του po/iw CAS είναι: ${twofactor}`,
                     email,
                     subject: "Κωδικός επαλήθευσης"

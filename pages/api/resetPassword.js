@@ -4,6 +4,7 @@ var chance = require('chance')
 chance = new chance()
 const sha256 = require('crypto-js/sha256')
 import captcha from './_lib/recaptcha'
+import log from "./_lib/logs"
 
 
 
@@ -41,12 +42,16 @@ module.exports = async ({body,query,method},res) => {
             fullName: user.fullName
         })
 
+        await log({
+            email: user.email,
+            type: 'password-reset-requested'
+        })
+
         res.send("OK")
     }
     if (body.token && body.password){
         let user = await db.collection("users").findOne({passwordResetToken: body.token})
         let password = sha256(body.password).toString()
-        console.log(password)
         if (!user) res.status(400).send("This user doesn\'t exist.")
 
         await db.collection("users").updateOne(
@@ -57,6 +62,11 @@ module.exports = async ({body,query,method},res) => {
                 }
             }, 
         )
+
+        await log({
+            email: user.email,
+            type: 'password-reset-successful'
+        })
 
         res.send("OK")
 

@@ -22,6 +22,12 @@ module.exports = async ({
 
             if (!user) res.status(400).send()
 
+            await log({
+                email: user.email,
+                type: 'cas-login',
+                service
+            })
+
             res.send(xml({
                 "cas:serviceResponse": [
                     {

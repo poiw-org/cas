@@ -4,6 +4,8 @@ var chance = require('chance')
 chance = new chance()
 import captcha from './_lib/recaptcha'
 import {send} from "./_lib/email"
+import log from "./_lib/logs"
+
 
 
 module.exports = (req, res) => {
@@ -71,12 +73,23 @@ module.exports = (req, res) => {
                         subject: "Νέα είσοδος μέσω του po/iw CAS"
                     })
 
+                    await log({
+                        email,
+                        type: 'successful-login-with-password',
+                        service
+                    })
+
                     res.json({
                         ticket: ticket
                     })
                 } else {
                     await db.collection("tickets").deleteMany({
                         email
+                    })
+
+                    await log({
+                        email,
+                        type: 'failed-login-2factor-invalid'
                     })
 
                     res.status(400).json({
@@ -111,11 +124,18 @@ module.exports = (req, res) => {
                     subject: "Κωδικός επαλήθευσης"
                 })
 
+                await log({
+                    email,
+                    type: 'login-with-password-2factor-requested',
+                    service
+                })
+
                 res.json({
                     requiresTwoFactor: true
                 })
             }
             else {
+
                 res.status(400).json({
                     message: 'No authentication method available.'
                 })

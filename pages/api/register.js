@@ -5,6 +5,8 @@ var chance = require('chance')
 chance = new chance()
 import captcha from './_lib/recaptcha'
 import passwordValidator from "./_lib/passwordValidator"
+import log from "./_lib/logs"
+
 
 const validateEmail = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -39,16 +41,33 @@ module.exports = (req,res) => {
 
 
             if(emailExists) {
+                await log({
+                    email,
+                    type: 'failed-registration-email-exists'
+                })
+
                 res.status(400).send('Υπάρχει ήδη χρήστης με αυτό το email.')
                 return
             }
         
             if(usernameExists){
+                await log({
+                    email,
+                    type: 'failed-registration-username-exists',
+                    username
+                })
+
                 res.status(400).send('Υπάρχει ήδη χρήστης με αυτό το username.')
                 return
             }
 
             if(blocked_usernames.value.includes(username)) {
+                await log({
+                    email,
+                    type: 'failed-registration-username-blocked',
+                    username
+                })
+
                 res.status(400).send('Η χρήση αυτού του username έχει απαγορευτεί.')
                 return
             }
@@ -75,6 +94,12 @@ module.exports = (req,res) => {
                 text: `Καλωσήρθες στο po/iw! Για να ενεργοποιήσεις το account σου, πάτα αυτό το λίνκ: ${activationLink}.`,
                 html: `Καλωσήρθες στο po/iw! Για να ενεργοποιήσεις το account σου, πάτα εδώ: <b><a href="${activationLink}">${activationLink}</a>.`
             })
+
+            await log({
+                email,
+                type: 'successful-registration-activation-pending'
+            })
+
             res.send('OK')
         })
 }

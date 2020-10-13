@@ -330,7 +330,7 @@ class Login extends Component {
                                     </div>
                                     <div className="col-12"> 
                                         <p style={{marginTop: 40 + 'px'}}>
-                                            <u><b>Ξεχάσατε τον κωδικό πρόσβασης;</b></u> <a href="#" onClick={this.resetPassword}>Επαναφορά κωδικού πρόσβασης</a>
+                                            <u><b>Ξέχασες τον κωδικό πρόσβασης;</b></u> <a href="#" onClick={this.resetPassword}>Επαναφορά κωδικού πρόσβασης</a>
                                         </p>
                                     </div>
                                 </Form>
@@ -365,7 +365,7 @@ class Login extends Component {
                             ),
                             twofactor: (
                                 <Form className="login password row" onSubmit={this.handleSubmit}>
-                                    <p className="col-9"><i className="fas fa-lock"></i> Πληκτρολόγησε τον 5-ψήφιο κωδικό επαλήθευσης που σου έχουμε στείλει στο email σου.</p>
+                                    <p className="col-9"><i className="fas fa-lock"></i> Πληκτρολόγησε τον 5-ψήφιο κωδικό επαλήθευσης που έχουμε στείλει στο email σου.</p>
                                     <div className="col-12 col-md-8">
                                     <PinInput
                                         length={5}
@@ -378,7 +378,7 @@ class Login extends Component {
                                     </div>
                                     <div className="col-12"> 
                                         <p style={{marginTop: 40 + 'px'}}>
-                                            Το βήμα αυτό μας βοηθά να κρατήσουμε τον λογαριασμό σου ασφαλή. Αν αντιμετοπήσεις κάποιο πρόβλημα, επικοινώνησε με την ομάδα.
+                                            Το βήμα αυτό μας βοηθά να κρατήσουμε τον λογαριασμό σου ασφαλή. Αν αντιμετωπίσεις κάποιο πρόβλημα, επικοινώνησε με την ομάδα.
                                         </p>
                                     </div>
                                 </Form>

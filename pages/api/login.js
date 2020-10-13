@@ -27,7 +27,6 @@ module.exports = (req, res) => {
                 })
             }
             if (twofactor) {
-                console.log(twofactor)
                 await captcha
                     .validate(recaptcha)
                     .catch(e=>res.status(400).send('Recaptcha verification failed'))

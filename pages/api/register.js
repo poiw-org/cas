@@ -3,7 +3,7 @@ import {send} from "./_lib/email"
 const sha256 = require('crypto-js/sha256')
 var chance = require('chance')
 chance = new chance()
-import captcha from './_lib/recaptcha'
+import hcaptcha from './_lib/recaptcha'
 import passwordValidator from "./_lib/passwordValidator"
 import log from "./_lib/logs"
 
@@ -16,12 +16,12 @@ const validateEmail = (email) => {
 module.exports = (req,res) => {
     karavaki()
         .then(async db=>{
-            let {email, username, fullName, school, phone, password, recaptcha} = req.body
+            let {email, username, fullName, school, phone, password, captcha} = req.body
             username = username.toLowerCase()
             email = email.toLowerCase()
 
-            await captcha
-                .validate(recaptcha)
+            await hcaptcha
+                .validate(captcha)
                 .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
             if(!email || !fullName || !school || !password || !phone) res.status(400).send('Missing required information.')

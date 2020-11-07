@@ -2,7 +2,7 @@ const karavaki = require('./_lib/karavaki')
 const sha256 = require('crypto-js/sha256')
 var chance = require('chance')
 chance = new chance()
-import captcha from './_lib/recaptcha'
+import hcaptcha from './_lib/recaptcha'
 import {send} from "./_lib/email"
 import log from "./_lib/logs"
 
@@ -17,7 +17,7 @@ module.exports = (req, res) => {
                 email,
                 password,
                 service,
-                recaptcha,
+                captcha,
                 twofactor
             } = req.body
 
@@ -27,9 +27,6 @@ module.exports = (req, res) => {
                 })
             }
             if (twofactor) {
-                await captcha
-                    .validate(recaptcha)
-                    .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
                 password = sha256(password).toString()
 
@@ -97,8 +94,8 @@ module.exports = (req, res) => {
                 }
             } 
             if(password){
-                await captcha
-                .validate(recaptcha)
+                await hcaptcha
+                .validate(captcha)
                 .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
                 let twofactor = chance.string({

@@ -14,7 +14,7 @@ module.exports = async ({body,query,method},res) => {
     if (body.email){   
 
         await captcha
-            .validate(body.recaptcha)
+            .validate(body.captcha)
             .catch(e=>res.status(400).send('Recaptcha verification failed'))
 
         let user = await db.collection("users").findOne({email: body.email})

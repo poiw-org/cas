@@ -1,14 +1,14 @@
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Logo from '../components/logo'
-import { Component, createRef } from "react"
+import {Component} from "react"
 import axios from "axios";
 import Head from 'next/head'
 import Alert from 'react-bootstrap/Alert'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Router from 'next/router'
-import ReCAPTCHA from "react-google-recaptcha";
 import PinInput from "react-pin-input";
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 
 class Login extends Component {
@@ -31,6 +31,7 @@ class Login extends Component {
             fullName: "",
             phone: "",
             username: "",
+            hcaptcha: "",
             recaptchaRef : React.createRef(),
             service: props.service,
             schools:[
@@ -84,31 +85,42 @@ class Login extends Component {
         })
     }
 
-    async resetPassword(event){    
+    async resetPassword(event){  
         event.preventDefault()
-         
-        this.setState({
-            processing: true,
-            message: {text:""}
-        })
-        
-        await this.state.recaptchaRef.current.reset()
-        recaptcha = await this.state.recaptchaRef.current.executeAsync();
-        
 
-        let {email} = this.state
-        await axios.post('../../api/resetPassword',{
-            email,
-            recaptcha
-        })
-        
-        this.setState({
-            processing:false,
-            message:{
-                text: "Έχουμε στείλει ένα link επαναφοράς κωδικού στο mail σου. Αφού τελειώσεις την διαδικασία σε άλλο παράθυρο, επέστρεψε εδώ.",
-                variant: "success"
-            }
-        })
+        if(this.state.stage != "password_reset") this.setState({stage: "password_reset"})
+        else if(!this.state.hcaptcha) this.setState({
+                message: {
+                    text: `Παρακαλούμε ολοκλήρωσε το captcha.`,
+                    variant: "warning"
+                },
+                processing: false
+            })
+        else{    
+            let captcha = this.state.hcaptcha
+
+            this.setState({
+                processing: true,
+                message: {text:""}
+            })
+
+            let {email} = this.state
+            await axios.post('../../api/resetPassword',{
+                email,
+                captcha
+            })
+            
+            this.setState({
+                stage: "login",
+                processing:false,
+                message:{
+                    text: "Έχουμε στείλει ένα link επαναφοράς κωδικού στο mail σου. Αφού τελειώσεις την διαδικασία σε άλλο παράθυρο, επέστρεψε εδώ.",
+                    variant: "success"
+                }
+            })
+        }
+
+
     }
 
     async handleSubmit(event) {
@@ -121,28 +133,37 @@ class Login extends Component {
 
         if(event.preventDefault) event.preventDefault()
 
-        let recaptcha, ticket
+        let ticket
+        let captcha = this.state.hcaptcha
 
         const {stage, email, username, password, service, fullName, phone, school, twofactor} = this.state;
 
         switch(stage){
             case "register":
-                console.log("reg")
                 let self = this 
 
                 self.setState({
                     processing: true
                 })
-    
-                await this.state.recaptchaRef.current.reset()
-                recaptcha = await this.state.recaptchaRef.current.executeAsync();
+
+                if(!captcha){
+                    this.setState({
+                        message: {
+                            text: `Παρακαλούμε ολοκλήρωσε το captcha.`,
+                            variant: "warning"
+                        },
+                        processing: false
+                    })
+
+                    return
+                }
     
                 await axios.post('../../api/register',{
                     email,
                     fullName,
                     phone,
                     school,
-                    recaptcha,
+                    captcha,
                     password,
                     username
                 })
@@ -182,17 +203,25 @@ class Login extends Component {
                 })
             break
             case "login":
-                console.log('lo on')
-                await this.state.recaptchaRef.current.reset()
-                recaptcha = await this.state.recaptchaRef.current.executeAsync();
-    
+                if(!captcha){
+                    this.setState({
+                        message: {
+                            text: `Παρακαλούμε ολοκλήρωσε το captcha.`,
+                            variant: "warning"
+                        },
+                        processing: false
+                    })
+
+                    return
+                }
+                console.log(captcha)
                 try{
                 const {data:{ticket, requiresTwoFactor}} = await axios
                     .post('../../api/login',{
                         email,
                         password,
                         service,
-                        recaptcha
+                        captcha
                     })
                 if(!requiresTwoFactor && ticket){
                     this.setState({
@@ -217,9 +246,6 @@ class Login extends Component {
                 }
             break
             case "twofactor":
-
-                await this.state.recaptchaRef.current.reset()
-                recaptcha = await this.state.recaptchaRef.current.executeAsync();
                     try {
                         const {data:{ticket}} = await axios
                         .post('../../api/login',{
@@ -227,7 +253,6 @@ class Login extends Component {
                             password,
                             service,
                             twofactor: event,
-                            recaptcha
                         })
 
                         if(ticket){
@@ -316,10 +341,13 @@ class Login extends Component {
                             login: (
                                 <Form className="login password row" onSubmit={this.handleSubmit}>
                                     <p className="col-9"><i className="fas fa-lock"></i> Πληκτρολόγησε τον κωδικό πρόσβασής σου στο po/iw.</p>
-                                    <div className="col-12 col-md-8">
+                                    <div className="col-12 col-md-9">
                                         <Form.Group>
                                             <Form.Control type="password" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός Πρόσβασης" required/>
                                         </Form.Group>
+                                    </div>
+                                    <div className="col-12 col-xl-4">
+                                        <HCaptcha sitekey="50c79e43-4b02-43e5-b7ce-57a10cee526d" onVerify={token => this.setState({hcaptcha: token})} onExpire={() => { this.setState({hcaptcha: ""})}}/>
                                     </div>
                                     <div className="col-12 col-md-4">
                                         {!this.state.processing ? (
@@ -335,15 +363,30 @@ class Login extends Component {
                                     </div>
                                 </Form>
                             ),
+                            password_reset: (
+                                <Form className="login password row" onSubmit={this.handleSubmit}>
+                                    <p className="col-9"><i className="fas fa-user"></i> Παρακαλώ ολοκλήρωσε το Captcha:</p>
+                                    <div className="col-12 col-xl-4">
+                                        <HCaptcha sitekey="50c79e43-4b02-43e5-b7ce-57a10cee526d" onVerify={token => this.setState({hcaptcha: token})} onExpire={() => { this.setState({hcaptcha: ""})}}/>
+                                    </div>
+                                    <div className="col-12 col-md-4">
+                                        {!this.state.processing ? (
+                                            <Button className="btn" variant="primary" onClick={this.resetPassword}>
+                                                Υποβολή
+                                            </Button>  
+                                        ):false}                    
+                                    </div>
+                                </Form>
+                            ),
                             register: (
                                 <Form className="register row" onSubmit={this.handleSubmit}>
                                     <p className="col-9"><i className="fas fa-lock"></i> Τρομερό! Φαίνεται ότι δεν είσαι μέλος στο po/iw! <b>Φτιάξε έναν λογαριασμό εδώ:</b></p>
                                     <div className="col-12">
                                         <Form.Group className="row">
-                                            <Form.Control type="text" className="col-12 col-md-6" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
-                                            <Form.Control type="text" className="col-12 col-md-6" value={this.state.username} onChange={this.handleChange.bind(this, 'username')} placeholder="Username" required/>
-                                            <Form.Control type="text" className="col-12 col-md-6" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
-                                            <Form.Control type="password" className="col-12 col-md-6" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
+                                            <Form.Control type="text" className="col-12 col-md-5" value={this.state.fullName} onChange={this.handleChange.bind(this, 'fullName')} placeholder="Ονοματεπώνυμο" required/>
+                                            <Form.Control type="text" className="col-12 col-md-5" value={this.state.username} onChange={this.handleChange.bind(this, 'username')} placeholder="Username" required/>
+                                            <Form.Control type="text" className="col-12 col-md-5" value={this.state.phone} onChange={this.handleChange.bind(this, 'phone')} placeholder="Τηλ. Επικοινωνίας" required/>
+                                            <Form.Control type="password" className="col-12 col-md-5" value={this.state.password} onChange={this.handleChange.bind(this, 'password')} placeholder="Κωδικός πρόσβασης" required/>
                                             <label className="col-12 p-2">Ίδρυμα φοίτησης:</label>
                                             <Form.Control as="select" size="md" value={this.state.school} className="col-12 col-md-8 schoolSelector" onChange={this.handleChange.bind(this, 'school')}>
                                                 {this.state.schools.map(school=>{
@@ -353,6 +396,9 @@ class Login extends Component {
                                                 })}
                                             </Form.Control>
                                         </Form.Group>
+                                    </div>
+                                    <div className="col-12 col-xl-4">
+                                        <HCaptcha sitekey="50c79e43-4b02-43e5-b7ce-57a10cee526d" onVerify={token => this.setState({hcaptcha: token})} onExpire={() => { this.setState({hcaptcha: ""})}}/>
                                     </div>
                                     <div className="col-12">
                                         {!this.state.processing ? (
@@ -386,11 +432,6 @@ class Login extends Component {
                             
                         }[this.state.stage]
                     }
-                    <ReCAPTCHA
-                        ref={this.state.recaptchaRef}
-                        size="invisible"
-                        sitekey="6Lcp39IZAAAAAFZSr3LpnErH1UTVcYL4SjeZVUx4"
-                    />
                     <Logo></Logo>
                 </div>
             </div>

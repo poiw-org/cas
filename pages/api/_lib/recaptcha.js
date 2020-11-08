@@ -10,7 +10,7 @@ module.exports = {
                     else reject()
                 })
                 .catch(e=>{
-                    console.log(e.message)
+                    //console.log(e.message)
                     reject()
                 })
         })

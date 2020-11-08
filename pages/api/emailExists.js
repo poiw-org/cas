@@ -33,7 +33,7 @@ module.exports = (req,res) =>{
             }
         })
         .catch(e=>{
-            console.log(e)
+            //console.log(e)
             res.status(500)
         })
 }

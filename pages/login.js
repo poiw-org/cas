@@ -214,7 +214,7 @@ class Login extends Component {
 
                     return
                 }
-                console.log(captcha)
+                //console.log(captcha)
                 try{
                 const {data:{ticket, requiresTwoFactor}} = await axios
                     .post('../../api/login',{

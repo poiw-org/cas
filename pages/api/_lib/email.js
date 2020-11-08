@@ -30,11 +30,11 @@ module.exports = {
                     }]
                 })
                 .then((result) => {
-                    console.log(result.body.Messages[0].To)
+                    //console.log(result.body.Messages[0].To)
                     resolve()
                 })
                 .catch((err) => {
-                    console.log(err.statusCode)
+                    //console.log(err.statusCode)
                     reject()
                 })
         })

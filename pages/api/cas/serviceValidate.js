@@ -7,7 +7,7 @@ module.exports = async ({
     query
 }, res) => {
     if (!query.ticket || !query.service) res.status(400).send("This endpoint is not intended to be used by humans. *Passive-aggressive voice*")
-    console.log(query)
+    //console.log(query)
     let {
         ticket,
         service

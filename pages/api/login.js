@@ -10,7 +10,6 @@ import log from "./_lib/logs"
 
 module.exports = (req, res) => {
     if (req.method != 'POST') res.redirect(`../../login${req.query.service != null ? '?service='+escape(req.query.service) : ""}`)
-    //console.log(req.body)
     karavaki()
         .then(async db => {
             let {

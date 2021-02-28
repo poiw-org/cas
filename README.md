@@ -2,9 +2,6 @@
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Nextjs-logo.svg/800px-Nextjs-logo.svg.png" width="200" /><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1280px-React-icon.svg.png" width="200" />
 \
 \
-[![Powered by Vercel](https://raw.githubusercontent.com/poiw-org/cas/master/public/assets/powered-by-vercel.svg)](https://vercel.com/?utm_source=poiw-org&utm_campaign=oss)\
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=poiw-org_cas&metric=alert_status)](https://sonarcloud.io/dashboard?id=poiw-org_cas)
-
 
 ## Τι είναι;
 

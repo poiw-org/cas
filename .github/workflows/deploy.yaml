@@ -11,6 +11,7 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v1
         with:
+          repository: poiw-org/microsites
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           event-type: cas-update
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

@@ -1,15 +1,13 @@
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Logo from '../components/logo'
-import {Component} from "react"
+import {Component, createRef} from "react"
 import axios from "axios";
 import Head from 'next/head'
 import Alert from 'react-bootstrap/Alert'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Router from 'next/router'
 import PinInput from "react-pin-input";
-import HCaptcha from '@hcaptcha/react-hcaptcha';
-
 
 class Login extends Component {
 
@@ -31,8 +29,8 @@ class Login extends Component {
             fullName: "",
             phone: "",
             username: "",
-            hcaptcha: "",
-            recaptchaRef : React.createRef(),
+            hcaptcha: "depracated",
+            recaptchaRef : createRef(),
             service: props.service,
             schools:[
                 "Ανωτάτη Σχολή Καλών Τεχνών (Α.Σ.Κ.Τ.)",
@@ -254,7 +252,6 @@ class Login extends Component {
                             service,
                             twofactor: event,
                         })
-
                         if(ticket){
                             this.setState({
                                 message: {
@@ -347,7 +344,6 @@ class Login extends Component {
                                         </Form.Group>
                                     </div>
                                     <div className="col-12 col-xl-4">
-                                        <HCaptcha sitekey="50c79e43-4b02-43e5-b7ce-57a10cee526d" onVerify={token => this.setState({hcaptcha: token})} onExpire={() => { this.setState({hcaptcha: ""})}}/>
                                     </div>
                                     <div className="col-12 col-md-4">
                                         {!this.state.processing ? (
@@ -365,14 +361,13 @@ class Login extends Component {
                             ),
                             password_reset: (
                                 <Form className="login password row" onSubmit={this.handleSubmit}>
-                                    <p className="col-9"><i className="fas fa-user"></i> Παρακαλώ ολοκλήρωσε το Captcha:</p>
+                                    <p className="col-9"><i className="fas fa-user"></i> Θέλεις σίγουρα να ζητήσεις επαναφορά κωδικού;</p>
                                     <div className="col-12 col-xl-4">
-                                        <HCaptcha sitekey="50c79e43-4b02-43e5-b7ce-57a10cee526d" onVerify={token => this.setState({hcaptcha: token})} onExpire={() => { this.setState({hcaptcha: ""})}}/>
                                     </div>
                                     <div className="col-12 col-md-4">
                                         {!this.state.processing ? (
                                             <Button className="btn" variant="primary" onClick={this.resetPassword}>
-                                                Υποβολή
+                                                Ναι
                                             </Button>  
                                         ):false}                    
                                     </div>
@@ -398,7 +393,6 @@ class Login extends Component {
                                         </Form.Group>
                                     </div>
                                     <div className="col-12 col-xl-4">
-                                        <HCaptcha sitekey="50c79e43-4b02-43e5-b7ce-57a10cee526d" onVerify={token => this.setState({hcaptcha: token})} onExpire={() => { this.setState({hcaptcha: ""})}}/>
                                     </div>
                                     <div className="col-12">
                                         {!this.state.processing ? (

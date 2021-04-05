@@ -91,8 +91,8 @@ module.exports = (req,res) => {
                 email,
                 fullName,
                 subject: "Ενεργοποίηση λογαριασμού po/iw",
-                text: `Καλωσήρθες στο po/iw! Για να ενεργοποιήσεις το account σου, πάτα αυτό το λίνκ: ${activationLink}.`,
-                html: `Καλωσήρθες στο po/iw! Για να ενεργοποιήσεις το account σου, πάτα εδώ: <b><a href="${activationLink}">${activationLink}</a>.`
+                text: `Καλωσήρθες στο po/iw! Για να ενεργοποιήσεις το account σου, πάτα αυτό το λίνκ: ${activationLink}`,
+                html: `Καλωσήρθες στο po/iw! Για να ενεργοποιήσεις το account σου, πάτα εδώ: <b><a href="${activationLink}">${activationLink}</a>`
             })
 
             await log({

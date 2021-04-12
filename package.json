@@ -25,6 +25,7 @@
     "react-google-recaptcha": "^2.1.0",
     "react-pin-input": "^1.0.1",
     "sass": "^1.26.10",
+    "sqreen": "^1.62.0",
     "toastr": "^2.1.4",
     "xml": "^1.0.1",
     "xml-js": "^1.6.11"

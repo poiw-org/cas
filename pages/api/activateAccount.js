@@ -1,3 +1,4 @@
+require('sqreen')
 import karavaki from "./_lib/karavaki"
 import log from "./_lib/logs"
 

@@ -1,3 +1,4 @@
+require('sqreen')
 import karavaki from "./_lib/karavaki"
 import {send} from "./_lib/email"
 const sha256 = require('crypto-js/sha256')

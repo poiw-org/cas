@@ -1,3 +1,4 @@
+require('sqreen')
 const karavaki = require('./_lib/karavaki')
 
 module.exports = (req,res) =>{

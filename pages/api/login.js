@@ -1,3 +1,4 @@
+require('sqreen')
 const karavaki = require('./_lib/karavaki')
 const sha256 = require('crypto-js/sha256')
 var chance = require('chance')

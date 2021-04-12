@@ -1,3 +1,4 @@
+require('sqreen')
 import {send} from "./_lib/email"
 const karavaki = require('./_lib/karavaki')
 var chance = require('chance')
